@@ -1,32 +1,25 @@
-// vite.config.ts
+// vite.config.ts (이전 코드에 build 설정을 추가합니다.)
 
-import path from 'path';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
+import path from 'path'; // path 모듈 import가 필요할 수 있습니다.
 
 export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, '.', '');
     return {
-      // (기존 서버 및 플러그인 설정 유지)
+      // (기존 설정 유지)
       server: {
         port: 3000,
         host: '0.0.0.0',
       },
       plugins: [react()],
       
-      // [CRITICAL FIX] 빌드 설정을 강제하여 App.tsx를 진입점으로 사용합니다.
+      // [CRITICAL FIX] 빌드 설정에 entry point를 강제합니다.
       build: {
+        // [Vercel에서 path0/index.html 경로를 정확히 인식하도록 돕습니다.]
         rollupOptions: {
-          input: {
-            // [!] App.tsx를 진입점으로 사용하도록 명시
-            main: path.resolve(__dirname, 'index.html'), // index.html 유지
-            appEntry: path.resolve(__dirname, 'App.tsx'), // App.tsx를 진입점으로 추가
-          },
-          output: {
-            entryFileNames: 'assets/[name].[hash].js', // 출력 파일 이름 지정
-            chunkFileNames: 'assets/[name].[hash].js',
-            assetFileNames: 'assets/[name].[hash].[ext]',
-          },
+            // [!] 앱의 실제 진입점인 App.tsx를 명시합니다.
+            input: path.resolve(__dirname, 'src/App.tsx'),
         },
       },
       
@@ -34,10 +27,6 @@ export default defineConfig(({ mode }) => {
         'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
         'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
       },
-      resolve: {
-        alias: {
-          // '@': path.resolve(__dirname, '.'), // 이 코드는 제거합니다.
-        }
-      }
+      // (resolve 설정이 있다면 그대로 유지)
     };
 });
